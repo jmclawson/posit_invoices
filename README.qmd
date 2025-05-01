@@ -1,8 +1,6 @@
 ---
 title: "README"
-format: 
-  html: 
-    embed-resources: true
+format: gfm
 execute: 
   eval: false
   df-print: paged
