@@ -108,19 +108,19 @@ readr::read_csv("my_records.csv") |>
 
 | date | action | course | group | contract | invoices | invoice_num | date_end | price |
 |:---|:---|:---|:---|---:|---:|---:|:---|---:|
-| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 1 | 2025-04-18 | 606.6667 |
-| 2025-04-02 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 1 | 2025-04-18 | 728.0000 |
-| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA | NA | NA | 133.0000 |
-| 2025-04-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA | NA | NA | -122.0000 |
-| 2025-04-19 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 2 | 2025-05-02 | 606.6667 |
-| 2025-04-19 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 2 | 2025-05-02 | 728.0000 |
-| 2025-05-03 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 3 | 2025-05-16 | 606.6667 |
-| 2025-05-03 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 3 | 2025-05-16 | 728.0000 |
-| 2025-05-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA | NA | NA | 133.0000 |
-| 2025-05-17 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 4 | 2025-05-30 | 606.6667 |
-| 2025-05-31 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 5 | 2025-06-13 | 606.6667 |
-| 2025-06-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA | NA | NA | -122.0000 |
-| 2025-06-14 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 6 | 2025-06-27 | 606.6667 |
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 1 | 2025-04-18 | 606.67 |
+| 2025-04-02 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 1 | 2025-04-18 | 728.00 |
+| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA | NA | NA | 133.00 |
+| 2025-04-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA | NA | NA | -122.00 |
+| 2025-04-19 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 2 | 2025-05-02 | 606.67 |
+| 2025-04-19 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 2 | 2025-05-02 | 728.00 |
+| 2025-05-03 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 3 | 2025-05-16 | 606.67 |
+| 2025-05-03 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 3 | 2025-05-16 | 728.00 |
+| 2025-05-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA | NA | NA | 133.00 |
+| 2025-05-17 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 4 | 2025-05-30 | 606.67 |
+| 2025-05-31 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 5 | 2025-06-13 | 606.67 |
+| 2025-06-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA | NA | NA | -122.00 |
+| 2025-06-14 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 6 | 2025-06-27 | 606.65 |
 
 If these assumptions don’t apply, adjust the Quarto template
 accordingly, making sure to prepare a data frame with the appropriate

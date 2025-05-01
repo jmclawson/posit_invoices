@@ -14,6 +14,7 @@ expand_invoice <- function(df, missed_price = -122, covered_price = 133) {
     unnest_longer(invoice_num) |> 
     mutate(
       date_end = as_date(date) + dweeks(invoice_num*2) + (6 - wday(as_date(date))),
+      kickoff = date,
       date = case_when(
         invoice_num != 1 ~ lag(date_end) + ddays(1),
         .default = date)) |> 
@@ -24,8 +25,15 @@ expand_invoice <- function(df, missed_price = -122, covered_price = 133) {
       price = case_when(
         action == "missed" ~ missed_price,
         action == "covered" ~ covered_price,
-        .default = contract / invoices)) |> 
-    arrange(date)
+        .default = round(contract / invoices, 2))) |> 
+    # correct rounding in final invoice
+    mutate(
+      .by = c(kickoff, course, group),
+      price = case_when(
+        date == max(date) & sum(price) > contract ~ price - (sum(price) - contract),
+        .default = price)) |> 
+    arrange(date) |> 
+    select(-kickoff)
 }
 
 print_dates <- function(x, y){
