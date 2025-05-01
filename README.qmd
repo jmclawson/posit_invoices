@@ -60,6 +60,18 @@ render_invoice("my_records.csv", from = "2025-04-01", to = "2025-04-18", invoice
 
 This code produces "[invoice_2025-04-18.pdf](invoice_2025-04-18.pdf)."
 
+This method can also be used to set a broader range than might usually be chosen, which will adjust the "amount" column:
+
+```{r}
+render_invoice(
+  "my_records.csv", 
+  from = "2025-04-01", 
+  to = "2025-06-18", 
+  invoice_date = "2025-06-18")
+```
+
+This code produces "[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)."
+
 ## Custom use
 
 The `expand_invoice()` function makes many assumptions about beginning with a simple CSV file and invoicing every two weeks. It produces a data frame in the following format:
@@ -73,3 +85,7 @@ readr::read_csv("my_records.csv") |>
 ```
 
 If these assumptions don't apply, adjust the Quarto template accordingly, making sure to prepare a data frame with the appropriate parameters before using `set_table()` for rendering. 
+
+## Credit
+
+Typst invoice template adapted from Eric Scott's design. Quarto extension adapted from [Jonathan Pedroza's code](https://github.com/jpedroza1228/quarto_extensions/tree/main/invoice).

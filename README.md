@@ -112,3 +112,9 @@ readr::read_csv("my_records.csv") |>
 If these assumptions don’t apply, adjust the Quarto template
 accordingly, making sure to prepare a data frame with the appropriate
 parameters before using `set_table()` for rendering.
+
+## Credit
+
+Typst invoice template adapted from Eric Scott’s design. Quarto
+extension adapted from [Jonathan Pedroza’s
+code](https://github.com/jpedroza1228/quarto_extensions/tree/main/invoice).
