@@ -81,6 +81,19 @@ render_invoice("my_records.csv", from = "2025-04-01", to = "2025-04-18", invoice
 
 This code produces “[invoice_2025-04-18.pdf](invoice_2025-04-18.pdf).”
 
+This method can also be used to set a broader range than might usually
+be chosen, which will adjust the “amount” column:
+
+``` r
+render_invoice(
+  "my_records.csv", 
+  from = "2025-04-01", 
+  to = "2025-06-18", 
+  invoice_date = "2025-06-18")
+```
+
+This code produces “[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf).”
+
 ## Custom use
 
 The `expand_invoice()` function makes many assumptions about beginning
