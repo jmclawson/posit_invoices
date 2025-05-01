@@ -1,0 +1,32 @@
+---
+sender:
+  name: P Sherman
+  address1: 42 Wallaby Way
+  address2: Sydney, Australia
+  phone: +61 2 1234-5678
+  email: me@example.com
+format:
+  invoiced-typst: default
+execute: 
+  echo: false
+  message: false
+  warning: false
+params:
+  inv_date: NULL
+  date_range: ["2025-04-01", "2025-04-18"]
+  file: my_records.csv
+---
+
+```{r}
+#| label: setup
+source("invoice_functions.R")
+```
+
+```{r}
+params$file |> 
+  read_csv() |> 
+  expand_invoice() |> 
+  set_table()
+```
+
+
