@@ -42,7 +42,7 @@ Use `set_table()` to prepare a formatted table for invoicing a given period of w
 #| eval: false
 read_csv("my_records.csv") |> 
   expand_invoices(period = "biweekly") |> 
-  set_table(invoice_period = "2025-05-02")
+  set_table(invoice_period = "2025-04-18")
 ```
 
 ```{r}
@@ -50,7 +50,7 @@ read_csv("my_records.csv") |>
 #| echo: false
 read_csv("my_records.csv") |> 
   expand_invoices(period = "biweekly") |> 
-  set_table(invoice_period = "2025-05-02") |> 
+  set_table(invoice_period = "2025-04-18") |> 
   as_raw_html()
 ```
 

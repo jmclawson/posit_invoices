@@ -67,17 +67,18 @@ period of work.
 ``` r
 read_csv("my_records.csv") |> 
   expand_invoices(period = "biweekly") |> 
-  set_table(invoice_period = "2025-05-02")
+  set_table(invoice_period = "2025-04-18")
 ```
 
-<div id="pipoxunnxc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="silzpxqddi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 |  | DATES | PRICE | QTY | DUE |
 |:---|:---|---:|:--:|---:|
-| mentored *Dogpaddling Foundations* with **Company 1** weeks 3–4 | Apr 19–May 2 | \$3,640 | 1/6 | \$606.67 |
-| mentored *Advanced Sugargliding* with **Second Co. Ltd.** weeks 3–4 | Apr 19–May 2 | \$2,184 | 1/3 | \$728.00 |
-| TOTAL |   |   |   | \$1,334.67 |
+| mentored *Dogpaddling Foundations* with **Company 1** weeks 0–2 | Apr 1–18 | \$3,640 | 1/6 | \$606.67 |
+| mentored *Advanced Sugargliding* with **Second Co. Ltd.** weeks 0–2 | Apr 2–18 | \$2,184 | 1/3 | \$728.00 |
+| missed *Dogpaddling Foundations* with **Company 1** | Apr 7 | −\$122 | 1 | (\$122.00) |
+| TOTAL |   |   |   | \$1,212.67 |
 
 </div>
 
