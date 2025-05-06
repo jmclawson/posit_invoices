@@ -7,7 +7,8 @@ Save contract data in a single CSV file within the project directory.
 The file “[my_records.csv](my_records.csv)” is included as an example:
 
 ``` r
-readr::read_csv("my_records.csv")
+source("invoice_functions.R")
+read_csv("my_records.csv")
 ```
 
 | date | action | course | group | contract | date_end |
@@ -29,13 +30,13 @@ when mentoring *or* to the date missed or covered.
 ## Adding details
 
 Use `expand_invoices()` to aid with invoicing at the final Friday of
-each period—either biweekly or monthly. For each contract, the final
-`invoice_due` value adjusts to accommodate rounding errors with the
-contract price. It produces a data frame in the following format:
+each period—either biweekly or monthly. In each contract, the final
+`invoice_due` value is adjusted to accommodate rounding errors and
+satisfy the contract price. `expand_invoices()` produces a data frame in
+the following format:
 
 ``` r
-source("invoice_functions.R")
-readr::read_csv("my_records.csv") |> 
+read_csv("my_records.csv") |> 
   expand_invoices(period = "biweekly")
 ```
 
@@ -64,12 +65,12 @@ Use `set_table()` to prepare a formatted table for invoicing a given
 period of work.
 
 ``` r
-readr::read_csv("my_records.csv") |> 
+read_csv("my_records.csv") |> 
   expand_invoices(period = "biweekly") |> 
   set_table(invoice_period = "2025-05-02")
 ```
 
-<div id="sjlzjmgmha" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="twysqltalo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 |  | DATES | PRICE | AMT | DUE |
@@ -90,12 +91,14 @@ by using a dedicated function.
 Use [`hybrid_invoice.qmd`](hybrid_invoice.qmd) as a template. After
 setting the document’s `date` in the metadata and `periods`,
 `period_date`, and `file` parameters in the YAML, use the “Render”
-button in RStudio or Positron to create [a PDF](hybrid_invoice.pdf).
+button in RStudio or Positron to create a PDF:
 
-### Render using `render_invoice()`
+- [📄 hybrid_invoice.pdf](hybrid_invoice.pdf)
 
-`render_invoice()` can be used to set details for an invoice and create
-a PDF without needing to touch a file.
+### Render using a function
+
+The `render_invoice()` function can be used to set details for an
+invoice and create a PDF without needing to touch a file.
 
 #### For the most recent period
 
