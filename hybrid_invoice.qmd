@@ -12,8 +12,8 @@ execute:
   message: false
   warning: false
 params:
-  inv_date: NULL
-  date_range: ["2025-04-01", "2025-04-18"]
+  periods: biweekly
+  period_date: null
   file: my_records.csv
 ---
 
@@ -25,8 +25,7 @@ source("invoice_functions.R")
 ```{r}
 params$file |> 
   read_csv() |> 
-  expand_invoice() |> 
+  expand_invoices(params$periods) |> 
+  # View(title="dog")
   set_table()
 ```
-
-

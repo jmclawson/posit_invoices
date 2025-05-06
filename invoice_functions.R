@@ -1,128 +1,183 @@
 library(tidyverse)
 library(gt)
 
-expand_invoice <- function(df, missed_price = -122, covered_price = 133) {
-  if ("invoice" %in% colnames(df)) {
-    message("`df` already has an 'invoice_num' column")
-    return(invisible(df))
-  }
-  
+invoice_biweekly <- function(df, cluster_iso = TRUE) {
   df |> 
-    filter(action == "mentored") |> 
-    group_by(date, course, group) |> 
-    mutate(invoice_num = list(1:invoices)) |> 
-    unnest_longer(invoice_num) |> 
+    rowwise() |> 
     mutate(
-      date_end = as_date(date) + dweeks(invoice_num*2) + (6 - wday(as_date(date))),
-      kickoff = date,
-      date = case_when(
-        invoice_num != 1 ~ lag(date_end) + ddays(1),
-        .default = date)) |> 
+      date = as_date(date),
+      isoweek = ifelse(
+        is.na(date_end),
+        list(isoweek(date)),
+        list(isoweek(date):isoweek(date_end)))) |>
     ungroup() |> 
-    list(filter(df, action != "mentored")) |> 
-    list_rbind() |> 
+    unnest_longer(isoweek) |> 
     mutate(
-      price = case_when(
+      .by = c(date, action, course, group, contract, date_end),
+      week = 0:(n() - 1),
+      friday = date + 6 - wday(date) + 7 * week) |> 
+    rowwise() |> 
+    mutate(
+      invoice = case_when(
+        all(
+          cluster_iso,
+          week > 1,
+          isoweek %% 2 == 0) ~ friday,
+        all(
+          !cluster_iso,
+          week != 0,
+          week %% 2 == 0) ~ friday
+      )
+    ) |> 
+    ungroup() |> 
+    group_by(date, action, course, group, contract, date_end) |> 
+    mutate(
+      invoice = case_when(
+        cluster_iso & is.na(date_end) & isoweek %% 2 == 0 ~ friday,
+        cluster_iso & is.na(date_end) & isoweek %% 2 == 1 ~ friday + 7,
+        !cluster_iso & is.na(date_end) ~ friday,
+        friday == last(friday) & is.na(invoice) ~ friday + 7,
+        .default = invoice)) |> 
+    ungroup() |> 
+    fill(invoice, .direction = "up")
+}
+
+invoice_monthly <- function(df) {
+  df |> 
+    rowwise() |> 
+    mutate(
+      date = as_date(date),
+      isoweek = ifelse(
+        is.na(date_end),
+        list(isoweek(date)),
+        list(isoweek(date):isoweek(date_end)))) |>
+    ungroup() |> 
+    unnest_longer(isoweek) |> 
+    mutate(
+      .by = c(date, action, course, group, contract, date_end),
+      week = 0:(n() - 1),
+      friday = date + 6 - wday(date) + 7 * week,
+      month = month(friday)) |> 
+    group_by(month) |> 
+    mutate(
+      invoice = case_when(
+        friday == max(friday) ~ friday)) |> 
+    ungroup() |> 
+    arrange(friday) |> 
+    fill(invoice, .direction = "up")
+}
+
+expand_invoices <- function(df, period = c("biweekly", "monthly"), missed_price = -122, covered_price = 133) {
+  period <- match.arg(period)
+  switch(
+    period,
+    biweekly = invoice_biweekly(df),
+    monthly = invoice_monthly(df)) |> 
+    group_by(date, action, course, group, contract, date_end, invoice) |> 
+    summarize(
+      week_start = min(week),
+      week_end = max(week)) |> 
+    mutate(
+      invoices = n(),
+      contract = case_when(
         action == "missed" ~ missed_price,
         action == "covered" ~ covered_price,
-        .default = round(contract / invoices, 2))) |> 
-    # correct rounding in final invoice
+        .default = contract),
+      invoice_due = round(contract / invoices, 2),
+      period_start = if_else(
+        is.na(lag(invoice)),
+        date, 
+        lag(invoice) + 1),
+      period_end = if_else(
+        is.na(date_end),
+        date,
+        invoice)) |>
+    ungroup() |> 
+    rename(contract_end = date_end) |> 
+    relocate(
+      week_start, week_end,
+      .before = period_start) |> 
     mutate(
-      .by = c(kickoff, course, group),
-      price = case_when(
-        date == max(date) & sum(price) > contract ~ price - (sum(price) - contract),
-        .default = price)) |> 
-    arrange(date) |> 
-    select(-kickoff)
+      .by = c(date, action, course, group, contract, contract_end),
+      invoice_due = case_when(
+        invoice == max(invoice) ~ invoice_due + contract - sum(invoice_due),
+        .default = invoice_due))
 }
 
-print_dates <- function(x, y){
-  case_when(
-    x == y ~ as_date(x) |> format("%b %e"),
-    format(as_date(x), "%b") == format(as_date(y), "%b") ~ 
-      paste0(as_date(x) |> format("%b %e"), 
-             "--",
-             as_date(y) |> format("%e")),
-    .default = 
-      paste0(as_date(x) |> format("%b %e"), 
-             "--", 
-             as_date(y) |> format("%b %e"))) |> 
-    str_squish()
-}
-
-set_place <- function(df, invoice_dates = as_date(params$date_range), alt_date = Sys.Date()) {
-  if (any(is.na(invoice_dates))) {
-    invoice_dates <- df |> 
-      filter(as_date(alt_date) %within% interval(date, date_end)) |> 
-      {\(x) c(min(x$date), max(x$date_end))}()
+print_range <- function(x, y){
+  if (is.numeric(x) & is.numeric(y)) {
+    case_when(
+      x == y ~ as.character(x),
+      .default = paste0(x,"--",y)
+    )
+  } else if (is.Date(x)) {
+    case_when(
+      x == y ~ as_date(x) |> format("%b %e"),
+      format(as_date(x), "%b") == format(as_date(y), "%b") ~ 
+        paste0(as_date(x) |> format("%b %e"), 
+               "--",
+               as_date(y) |> format("%e")),
+      .default = 
+        paste0(as_date(x) |> format("%b %e"), 
+               "--", 
+               as_date(y) |> format("%b %e"))) |> 
+      str_squish()
+  } else {
+    stop(paste("Range confusion with", x, "and", y))
   }
-  the_df <- df |> 
-    filter(as_date(date) >= as_date(invoice_dates[1]),
-           if_else(
-             !is.na(date_end), 
-             as_date(date_end) <= as_date(invoice_dates[2]), 
-             as_date(date) <= as_date(invoice_dates[2]))
-    ) |> 
-    mutate(
-      incl_dates = case_when(
-        !is.na(date_end) ~ print_dates(date, date_end),
-        TRUE ~ as_date(date) |> 
-          format("%b %e") |> 
-          str_squish()),
-      action = action,
-      description = paste0(
-        action, " *", course, "* with **", group, "**"),
-      amount = 1)
-  
-  the_df |> 
-    select(date, date_end, incl_dates, description, contract, invoices, price, amount)
 }
 
-set_table <- function(data, alt_date = params$inv_date %||% Sys.Date()) {
-  data |> 
-    set_place(alt_date = alt_date) |> 
+set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
+  if (length(invoice_period) == 1) {
+    df <- df |> 
+      filter(invoice <= invoice_period) |> 
+      filter(invoice == max(invoice))
+  } else if (length(invoice_period) == 2) {
+    df <- df |> 
+      filter(invoice %within% interval( as_date(invoice_period[1]), as_date(invoice_period[2])))
+  } else if (length(invoice_period) > 2) {
+    df <- df |> 
+      filter(invoice %in% invoice_period)
+  }
+  df |> 
+    mutate(amount = 1/invoices) |> 
+    group_by(action, course, group, contract, contract_end) |> 
+    arrange(period_start) |> 
     mutate(
-      .by = c(description, contract, price, invoices),
-      collapse_dates = case_when(
-        !is.na(lag(date_end)) & all(date == (lag(date_end) + ddays(1))) ~ TRUE,
-        is.na(lag(date_end)) & date == (lead(date_end) + ddays(1)) ~ TRUE,
-        .default = FALSE)
-    ) |> 
-    rowwise() |> 
-    mutate(
-      included_dates = list(
-        seq(from = date, 
-            to = if_else(is.na(date_end), date, date_end), 
-            by = "1 day"))) |> 
+      noncontiguous = any(period_start != (lag(period_end) + 1), na.rm = TRUE)) |>
     ungroup() |> 
-    mutate(
-      .by = c(description, contract, price, invoices),
-      included_dates = list(as_date(unique(unlist(included_dates)))),
-      date = if_else(is.na(date_end), date, min(date)),
-      date_end = if_else(is.na(date_end), date, max(date_end))) |> 
-    rowwise() |> 
-    mutate(
-      collapse_it = length(setdiff(unlist(included_dates), seq(date, date_end, "1 day")))  == 0) |> 
-    ungroup() |> 
+    group_by(action, course, group, contract, contract_end) |> 
     summarize(
-      .by = c(description, contract, price, invoices),
+      date = list(date),
+      noncontiguous = all(noncontiguous),
+      week_start = min(week_start),
+      week_end = max(week_end),
+      period_start = min(period_start),
+      period_end = max(period_end),
       amount = sum(amount),
-      date = min(date),
-      date_end = if_else(is.na(date_end), date, max(date_end)),
-      incl_dates = case_when(
-        collapse_it ~ print_dates(min(date), max(date_end)),
-        .default = str_flatten_comma(incl_dates))) |> 
-    distinct() |> 
+      invoice_due = sum(invoice_due)) |> 
+    ungroup() |> 
+    rowwise() |> 
     mutate(
-      due = price * amount,
-      amount = case_when(
-        !is.na(invoices) ~ amount/invoices,
-        .default = amount),
-      price = case_when(
-        !is.na(contract) ~ contract,
-        .default = price)) |> 
-    select(-contract, -invoices) |>
-    select(description, price, incl_dates, amount, due) |> 
+      week_range = print_range(week_start, week_end),
+      week_range = case_when(
+        str_detect(week_range, "--") ~ paste("weeks", week_range), 
+        is.na(contract_end) ~ "",
+        .default = paste("week", week_range)),
+      period_range = if_else(
+        noncontiguous,
+        date |> 
+          unlist() |> 
+          as_date() |> 
+          format("%b %e") |> 
+          str_flatten_comma(),
+        print_range(
+          x = period_start,
+          y = period_end)),
+      description = paste0(action, " *", course, "* with **", group, "** ", week_range) |> str_squish()) |> 
+    select(description, period_range, contract, 
+           amount, invoice_due) |>
+    arrange(desc(contract)) |> 
     gt(rowname_col = "description") |>
     tab_style(
       style = cell_text(v_align = "top"),
@@ -141,24 +196,24 @@ set_table <- function(data, alt_date = params$inv_date %||% Sys.Date()) {
         weight = px(0),
         style = "solid"),
       locations = cells_stub()) |>
-    fmt_markdown(columns = c("incl_dates", "description")) |>
+    fmt_markdown(columns = c("period_range", "description")) |>
     cols_label(
-      incl_dates = "DATES",
-      price = "PRICE",
+      period_range = "DATES",
+      contract = "PRICE",
       amount = "AMT",
-      due = "DUE",
+      invoice_due = "DUE",
     ) |>
-    fmt_fraction(columns = "amount") |> #, layout = "diagonal") |> 
+    fmt_fraction(columns = "amount") |> 
     fmt_currency(
-      columns = c(price), 
+      columns = c(contract), 
       accounting = FALSE,
       use_subunits = FALSE) |> 
     fmt_currency(
-      columns = c(due), 
+      columns = c(invoice_due), 
       accounting = TRUE) |> 
     fmt_missing(missing_text = " ") |> 
     grand_summary_rows(
-      columns = due,
+      columns = invoice_due,
       fns = list(TOTAL ~ sum(.)),
       fmt = ~ fmt_currency(.),
       missing_text = " ") |>
@@ -177,27 +232,21 @@ set_table <- function(data, alt_date = params$inv_date %||% Sys.Date()) {
     tab_options(row.striping.include_stub = TRUE)
 }
 
-render_invoice <- function(csv, from = NA, to = NA, invoice_date = Sys.Date(), pdf = NULL) {
+render_invoice <- function(csv, periods = c("biweekly", "monthly"), period_date = NULL, invoice_date = Sys.Date(), pdf = NULL) {
   quarto::quarto_render(
     input = "hybrid_invoice.qmd",
     output_file = pdf %||% paste0("invoice_", invoice_date, ".pdf"),
     execute_params = list(
-      inv_date = invoice_date,
-      date_range = c(from, to),
+      periods = match.arg(periods),
+      period_date = period_date %||% invoice_date,
       file = csv),
     metadata = list(date = invoice_date),
     quarto_args = c("--metadata", paste0("date=", invoice_date)))
 }
 
 ####### Usage ######
-## 1. Invoice for the period including today:
+## 1. Invoice for the period ending today (or before today):
 # render_invoice("my_records.csv")
 
-## 2. Invoice for the period including a specific invoice date:
+## 2. Invoice for a specific invoice date:
 # render_invoice("my_records.csv", invoice_date = "2025-05-02")
-
-## 3. Invoice for work from an explicit date range:
-# render_invoice("my_records.csv", from = "2025-04-01", to = "2025-04-18", pdf = "invoice_example3.pdf")
-
-## 4. Invoice for work from an explicit date range with an explicit invoice date
-# render_invoice("my_records.csv", from = "2025-04-01", to = "2025-04-18", invoice_date = "2025-04-18")

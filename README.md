@@ -10,22 +10,52 @@ The file “[my_records.csv](my_records.csv)” is included as an example:
 readr::read_csv("my_records.csv")
 ```
 
-| date       | action   | course                  | group           | contract | invoices |
-|:-----------|:---------|:------------------------|:----------------|---------:|---------:|
-| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1       |     3640 |        6 |
-| 2025-04-02 | mentored | Advanced Sugargliding   | Comp 2          |     2184 |        3 |
-| 2025-04-07 | missed   | Dogpaddling Foundations | Company 1       |       NA |       NA |
-| 2025-04-06 | covered  | Expressive Bowling      | Froggy Croakers |       NA |       NA |
-| 2025-05-06 | covered  | Expressive Bowling      | Froggy Croakers |       NA |       NA |
-| 2025-06-07 | missed   | Dogpaddling Foundations | Company 1       |       NA |       NA |
+| date | action | course | group | contract | date_end |
+|:---|:---|:---|:---|---:|:---|
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 |
+| 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 |
+| 2025-04-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA |
+| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA |
+| 2025-05-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA |
+| 2025-06-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA |
 
 Each contract, each missed day, and each covered day should be listed on
 its own row. The `action` column should include a single word for each
 row: “mentored” or “covered” or “missed”. Include the contract price and
-number of invoices where applicable. Do not include price or number of
-invoices for days covered or missed. The `date` column refers to the
-**kick-off date** for a particular group *or* to the date missed or
-covered.
+`date_end` for mentoring. Do not include price or `date_end` for days
+covered or missed. The `date` column refers to the **kick-off date**
+when mentoring *or* to the date missed or covered.
+
+## Adding details for each invoice date
+
+The `expand_invoices()` function adjusts a simple CSV file to aid with
+invoicing at the final Friday of each period—either every two weeks, or
+each month. It produces a data frame in the following format:
+
+``` r
+source("invoice_functions.R")
+readr::read_csv("my_records.csv") |> 
+  expand_invoices()
+```
+
+| date | action | course | group | contract | contract_end | invoice | invoices | invoice_due | week_start | week_end | period_start | period_end |
+|:---|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|:---|:---|
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 | 2025-04-18 | 6 | 606.67 | 0 | 2 | 2025-04-01 | 2025-04-18 |
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 | 2025-05-02 | 6 | 606.67 | 3 | 4 | 2025-04-19 | 2025-05-02 |
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 | 2025-05-16 | 6 | 606.67 | 5 | 6 | 2025-05-03 | 2025-05-16 |
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 | 2025-05-30 | 6 | 606.67 | 7 | 8 | 2025-05-17 | 2025-05-30 |
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 | 2025-06-13 | 6 | 606.67 | 9 | 10 | 2025-05-31 | 2025-06-13 |
+| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 2025-06-27 | 2025-06-27 | 6 | 606.65 | 11 | 12 | 2025-06-14 | 2025-06-27 |
+| 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 | 2025-04-18 | 3 | 728.00 | 0 | 2 | 2025-04-02 | 2025-04-18 |
+| 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 | 2025-05-02 | 3 | 728.00 | 3 | 4 | 2025-04-19 | 2025-05-02 |
+| 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 | 2025-05-16 | 3 | 728.00 | 5 | 6 | 2025-05-03 | 2025-05-16 |
+| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | 133 | NA | 2025-04-11 | 1 | 133.00 | 0 | 0 | 2025-04-06 | 2025-04-06 |
+| 2025-04-07 | missed | Dogpaddling Foundations | Company 1 | -122 | NA | 2025-04-18 | 1 | -122.00 | 0 | 0 | 2025-04-07 | 2025-04-07 |
+| 2025-05-06 | covered | Expressive Bowling | Froggy Croakers | 133 | NA | 2025-05-16 | 1 | 133.00 | 0 | 0 | 2025-05-06 | 2025-05-06 |
+| 2025-06-07 | missed | Dogpaddling Foundations | Company 1 | -122 | NA | 2025-06-13 | 1 | -122.00 | 0 | 0 | 2025-06-07 | 2025-06-07 |
+
+A data frame in this format can then be passed along to `set_table()`
+for rendering with gt.
 
 ## Rendering Invoices
 
@@ -45,86 +75,65 @@ included, the resulting file is
 ### Render using `render_invoice()`
 
 `render_invoice()` can be used to set details for an invoice and create
-a PDF without needing to adjust a file.
+a PDF without needing to touch a file.
 
-#### Invoice for the period including today:
+#### Invoice for the period ending on or before today:
 
 ``` r
 render_invoice("my_records.csv")
 ```
 
-The above code, rendered on May 1, produces
-“[invoice_2025-05-01.pdf](invoice_2025-05-01.pdf).”
+The above code, rendered on May 6, produces
+“[invoice_2025-05-06.pdf](invoice_2025-05-06.pdf).”
 
-#### Invoice for the period including a specific invoice date:
-
-``` r
-render_invoice("my_records.csv", invoice_date = "2025-05-02")
-```
-
-The above code produces
-“[invoice_2025-05-02.pdf](invoice_2025-05-02.pdf).”
-
-#### Invoice for work from an explicit date range:
+#### Set a file name
 
 ``` r
-render_invoice("my_records.csv", from = "2025-04-01", to = "2025-04-18", pdf = "invoice_example3.pdf")
+render_invoice("my_records.csv", pdf = "sherman_invoice2.pdf")
 ```
 
-The above code produces “[invoice_example3.pdf](invoice_example3.pdf).”
+By default, invoice filenames include the invoice date. Setting the
+`pdf` argument overrides this default, and the above code produces
+“[sherman_invoice2.pdf](sherman_invoice2.pdf).”
 
-#### Invoice for work from an explicit date range with an explicit invoice date
+#### Invoice with an explicit invoice date
 
 ``` r
-render_invoice("my_records.csv", from = "2025-04-01", to = "2025-04-18", invoice_date = "2025-04-18")
+render_invoice("my_records.csv", invoice_date = "2025-06-18")
 ```
 
-This code produces “[invoice_2025-04-18.pdf](invoice_2025-04-18.pdf).”
+Setting an explicit invoice date can be handy when preparing invoices
+ahead of time. This code produces
+“[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf).”
+
+#### Invoice for the period ending on or before a specific date:
+
+``` r
+render_invoice("my_records.csv", period_date = "2025-04-18", pdf = "sherman_invoice3.pdf")
+```
+
+Explicitly choose the date of an invoice period to create a PDF dated
+today of a *past* invoice that has not yet been resolved. This produces
+“[sherman_invoice3.pdf](sherman_invoice3.pdf).”
 
 This method can also be used to set a broader range than might usually
 be chosen, which will adjust the “amount” column:
 
+1.  One value in `period_date` will prepare an invoice for the period
+    ending on that day or before.
+2.  Two values will construct a range and prepare an invoice for all
+    periods ending within the range.
+3.  More than two values will match each value.
+
 ``` r
 render_invoice(
   "my_records.csv", 
-  from = "2025-04-01", 
-  to = "2025-06-18", 
+  period_date = c("2025-03-01", "2025-06-18"), 
   invoice_date = "2025-06-18")
 ```
 
-This code produces “[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf).”
-
-## Custom use
-
-The `expand_invoice()` function makes many assumptions about beginning
-with a simple CSV file and invoicing every two weeks. It produces a data
-frame in the following format:
-
-``` r
-source("invoice_functions.R")
-readr::read_csv("my_records.csv") |> 
-  expand_invoice()
-```
-
-| date | action | course | group | contract | invoices | invoice_num | date_end | price |
-|:---|:---|:---|:---|---:|---:|---:|:---|---:|
-| 2025-04-01 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 1 | 2025-04-18 | 606.67 |
-| 2025-04-02 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 1 | 2025-04-18 | 728.00 |
-| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA | NA | NA | 133.00 |
-| 2025-04-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA | NA | NA | -122.00 |
-| 2025-04-19 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 2 | 2025-05-02 | 606.67 |
-| 2025-04-19 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 2 | 2025-05-02 | 728.00 |
-| 2025-05-03 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 3 | 2025-05-16 | 606.67 |
-| 2025-05-03 | mentored | Advanced Sugargliding | Comp 2 | 2184 | 3 | 3 | 2025-05-16 | 728.00 |
-| 2025-05-06 | covered | Expressive Bowling | Froggy Croakers | NA | NA | NA | NA | 133.00 |
-| 2025-05-17 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 4 | 2025-05-30 | 606.67 |
-| 2025-05-31 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 5 | 2025-06-13 | 606.67 |
-| 2025-06-07 | missed | Dogpaddling Foundations | Company 1 | NA | NA | NA | NA | -122.00 |
-| 2025-06-14 | mentored | Dogpaddling Foundations | Company 1 | 3640 | 6 | 6 | 2025-06-27 | 606.65 |
-
-If these assumptions don’t apply, adjust the Quarto template
-accordingly, making sure to prepare a data frame with the appropriate
-parameters before using `set_table()` for rendering.
+Columns update to reflect the weeks, dates, number of units, and amount
+due, as shown in “[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf).”
 
 ## Credit
 
