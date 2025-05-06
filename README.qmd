@@ -3,6 +3,8 @@ title: "README"
 format: gfm
 execute: 
   eval: false
+  message: false
+  warning: false
   df-print: paged
 ---
 
@@ -18,77 +20,141 @@ readr::read_csv("my_records.csv")
 
 Each contract, each missed day, and each covered day should be listed on its own row. The `action` column should include a single word for each row: "mentored" or "covered" or "missed". Include the contract price and `date_end` for mentoring. Do not include price or `date_end` for days covered or missed. The `date` column refers to the **kick-off date** when mentoring *or* to the date missed or covered.
 
-## Adding details for each invoice date
+## Adding details
 
-The `expand_invoices()` function adjusts a simple CSV file to aid with invoicing at the final Friday of each period—either every two weeks, or each month. It produces a data frame in the following format:
+The `expand_invoices()` function adjusts a simple CSV file to aid with invoicing at the final Friday of each period---either biweekly or monthly. It produces a data frame in the following format:
 
 ```{r}
 #| eval: true
 #| message: false
 source("invoice_functions.R")
 readr::read_csv("my_records.csv") |> 
-  expand_invoices()
+  expand_invoices(period = "biweekly")
 ```
 
-A data frame in this format can then be passed along to `set_table()` for rendering with gt. 
+A data frame in this format can then be passed along to `set_table()` for formatting with gt. 
 
-## Rendering Invoices
+## Formatting the table
+
+The `set_table()` function prepares a formatted table for invoicing a given period of work.
+
+```{r}
+#| eval: true
+readr::read_csv("my_records.csv") |> 
+  expand_invoices(period = "biweekly") |> 
+  set_table(invoice_period = "2025-05-02")
+```
+
+## Rendering Invoices as PDF
 
 Invoices can be created either by modifying the Quarto file directly or by using a dedicated function.
 
 ### Render the Quarto file in the IDE
 
-Use `hybrid_invoice.qmd` as a template. After setting the document's `date` in the metadata and `date_range` in the parameters in the YAML, use the "Render" button in RStudio or Positron the file to create a PDF.
-
-When rendering the "[hybrid_invoice.qmd](hybrid_invoice.qmd)" file as included, the resulting file is "[hybrid_invoice.pdf](hybrid_invoice.pdf)."
+Use [`hybrid_invoice.qmd`](hybrid_invoice.qmd) as a template. After setting the document's `date` in the metadata and `periods`, `period_date`, and `file` parameters in the YAML, use the "Render" button in RStudio or Positron to create [a PDF](hybrid_invoice.pdf).
 
 ### Render using `render_invoice()`
 
 `render_invoice()` can be used to set details for an invoice and create a PDF without needing to touch a file.
 
-#### Invoice for the period ending on or before today:
+#### For the most recent period 
+
+By default, an invoice will be prepared for the period ending on or before today, with the date marking the filename.
+
+:::: {.columns style="display: flex; align-items: center;"}
+
+::: {.column width="50%"}
 ```{r}
 render_invoice("my_records.csv")
 ```
+:::
 
-The above code, rendered on May 6, produces "[invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)."
+::: {.column width="50%"}
+[📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
+:::
+
+::::
 
 #### Set a file name
 
-```{r}
-render_invoice("my_records.csv", pdf = "sherman_invoice2.pdf")
-```
+Setting the `pdf` argument overrides filename defaults.
 
-By default, invoice filenames include the invoice date. Setting the `pdf` argument overrides this default, and the above code produces "[sherman_invoice2.pdf](sherman_invoice2.pdf)."
+:::: {.columns style="display: flex; align-items: center;"}
 
-#### Invoice with an explicit invoice date
-```{r}
-render_invoice("my_records.csv", invoice_date = "2025-06-18")
-```
-
-Setting an explicit invoice date can be handy when preparing invoices ahead of time. This code produces "[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)."
-
-#### Invoice for the period ending on or before a specific date:
-```{r}
-render_invoice("my_records.csv", period_date = "2025-04-18", pdf = "sherman_invoice3.pdf")
-```
-
-Explicitly choose the date of an invoice period to create a PDF dated today of a *past* invoice that has not yet been resolved. This produces "[sherman_invoice3.pdf](sherman_invoice3.pdf)."
-
-This method can also be used to set a broader range than might usually be chosen, which will adjust the "amount" column:
-
-1. One value in `period_date` will prepare an invoice for the period ending on that day or before.
-2. Two values will construct a range and prepare an invoice for all periods ending within the range.
-3. More than two values will match each value.
-
+::: {.column width="50%"}
 ```{r}
 render_invoice(
-  "my_records.csv", 
+  csv = "my_records.csv", 
+  pdf = "sherman_invoice2.pdf")
+```
+:::
+
+::: {.column width="50%"}
+[📄 sherman_invoice2.pdf](sherman_invoice2.pdf)
+:::
+
+::::
+
+
+#### Choose an invoice date
+
+The `invoice_date` argument prepares an invoice for some other date.
+
+:::: {.columns style="display: flex; align-items: center;"}
+
+::: {.column width="50%"}
+```{r}
+render_invoice(
+  csv = "my_records.csv", 
+  invoice_date = "2025-06-18")
+```
+:::
+
+::: {.column width="50%"}
+[📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
+:::
+
+::::
+
+#### Choose an invoice period
+
+Manually select an invoice period with `period_date`.
+
+:::: {.columns style="display: flex; align-items: center;"}
+
+::: {.column width="50%"}
+```{r}
+render_invoice(
+  csv = "my_records.csv", 
+  period_date = "2025-04-18", 
+  pdf = "sherman_invoice3.pdf")
+```
+:::
+
+::: {.column width="50%"}
+[📄 sherman_invoice3.pdf](sherman_invoice3.pdf)
+:::
+
+::::
+
+This method can also be used to set a broader range than might usually be chosen. Two values will construct a range and prepare an invoice for all periods ending within the range; more than two values will match invoice dates on each value. Columns update to reflect the weeks, dates, number of units, and amount due.
+
+:::: {.columns style="display: flex; align-items: center;"}
+
+::: {.column width="50%"}
+```{r}
+render_invoice(
+  csv = "my_records.csv", 
   period_date = c("2025-03-01", "2025-06-18"), 
   invoice_date = "2025-06-18")
 ```
+:::
 
-Columns update to reflect the weeks, dates, number of units, and amount due, as shown in "[invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)." 
+::: {.column width="50%"}
+[📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
+:::
+
+::::
 
 ## Credit
 
