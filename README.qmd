@@ -22,7 +22,7 @@ Each contract, each missed day, and each covered day should be listed on its own
 
 ## Adding details
 
-The `expand_invoices()` function adjusts a simple CSV file to aid with invoicing at the final Friday of each period---either biweekly or monthly. It produces a data frame in the following format:
+Use `expand_invoices()` to aid with invoicing at the final Friday of each period---either biweekly or monthly. It produces a data frame in the following format:
 
 ```{r}
 #| eval: true
@@ -36,13 +36,22 @@ A data frame in this format can then be passed along to `set_table()` for format
 
 ## Formatting the table
 
-The `set_table()` function prepares a formatted table for invoicing a given period of work.
+Use `set_table()` to prepare a formatted table for invoicing a given period of work.
 
 ```{r}
-#| eval: true
+#| eval: false
 readr::read_csv("my_records.csv") |> 
   expand_invoices(period = "biweekly") |> 
   set_table(invoice_period = "2025-05-02")
+```
+
+```{r}
+#| eval: true
+#| echo: false
+readr::read_csv("my_records.csv") |> 
+  expand_invoices(period = "biweekly") |> 
+  set_table(invoice_period = "2025-05-02") |> 
+  as_raw_html()
 ```
 
 ## Rendering Invoices as PDF
