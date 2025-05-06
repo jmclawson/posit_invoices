@@ -70,10 +70,10 @@ read_csv("my_records.csv") |>
   set_table(invoice_period = "2025-05-02")
 ```
 
-<div id="twysqltalo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="pipoxunnxc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
-|  | DATES | PRICE | AMT | DUE |
+|  | DATES | PRICE | QTY | DUE |
 |:---|:---|---:|:--:|---:|
 | mentored *Dogpaddling Foundations* with **Company 1** weeks 3–4 | Apr 19–May 2 | \$3,640 | 1/6 | \$606.67 |
 | mentored *Advanced Sugargliding* with **Second Co. Ltd.** weeks 3–4 | Apr 19–May 2 | \$2,184 | 1/3 | \$728.00 |
@@ -109,7 +109,7 @@ before today, with the date marking the filename.
 render_invoice("my_records.csv")
 ```
 
-- [📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
+- [📄 hybrid_invoice_2025-05-06.pdf](hybrid_invoice_2025-05-06.pdf)
 
 #### Set a file name
 
@@ -133,7 +133,7 @@ render_invoice(
   invoice_date = "2025-06-18")
 ```
 
-- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
+- [📄 hybrid_invoice_2025-06-18.pdf](hybrid_invoice_2025-06-18.pdf)
 
 #### Choose an invoice period
 
@@ -152,7 +152,7 @@ This method can also be used to set a broader range than might usually
 be chosen. Two values will construct a range and prepare an invoice for
 all periods ending within the range; more than two values will match
 invoice dates on each value. Columns update to reflect the weeks, dates,
-number of units, and amount due.
+quantity, and amount due.
 
 ``` r
 render_invoice(
@@ -161,7 +161,7 @@ render_invoice(
   invoice_date = "2025-06-18")
 ```
 
-- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
+- [📄 hybrid_invoice_2025-06-18.pdf](hybrid_invoice_2025-06-18.pdf)
 
 ## Credit
 

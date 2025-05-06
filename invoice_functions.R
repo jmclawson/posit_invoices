@@ -140,7 +140,7 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
       filter(invoice %in% invoice_period)
   }
   df |> 
-    mutate(amount = 1/invoices) |> 
+    mutate(quantity = 1/invoices) |> 
     group_by(action, course, group, contract, contract_end) |> 
     arrange(period_start) |> 
     mutate(
@@ -154,7 +154,7 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
       week_end = max(week_end),
       period_start = min(period_start),
       period_end = max(period_end),
-      amount = sum(amount),
+      quantity = sum(quantity),
       invoice_due = sum(invoice_due)) |> 
     ungroup() |> 
     rowwise() |> 
@@ -176,7 +176,7 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
           y = period_end)),
       description = paste0(action, " *", course, "* with **", group, "** ", week_range) |> str_squish()) |> 
     select(description, period_range, contract, 
-           amount, invoice_due) |>
+           quantity, invoice_due) |>
     arrange(desc(contract)) |> 
     gt(rowname_col = "description") |>
     tab_style(
@@ -200,10 +200,10 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
     cols_label(
       period_range = "DATES",
       contract = "PRICE",
-      amount = "AMT",
+      quantity = "QTY",
       invoice_due = "DUE",
     ) |>
-    fmt_fraction(columns = "amount") |> 
+    fmt_fraction(columns = "quantity") |> 
     fmt_currency(
       columns = c(contract), 
       accounting = FALSE,
@@ -222,7 +222,7 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
     opt_table_font(
       font = "Georgia",
       size = 14) |> 
-    cols_align("center", "amount") |> 
+    cols_align("center", "quantity") |> 
     tab_style(
       style = list(
         cell_text(align = "right")
@@ -232,10 +232,14 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
     tab_options(row.striping.include_stub = TRUE)
 }
 
-render_invoice <- function(csv, periods = c("biweekly", "monthly"), period_date = NULL, invoice_date = Sys.Date(), pdf = NULL) {
+render_invoice <- function(csv, qmd = "hybrid_invoice.qmd", periods = c("biweekly", "monthly"), period_date = NULL, invoice_date = Sys.Date(), pdf = NULL) {
+  qmd_filename <- tools::file_path_sans_ext(basename(qmd))
+  pdf_filename <- pdf %||% paste0(qmd_filename, "_", invoice_date) |> 
+    {\(x) if_else(str_detect(x, "[.]pdf$"), x, paste0(x, ".pdf"))}()
+  
   quarto::quarto_render(
-    input = "hybrid_invoice.qmd",
-    output_file = pdf %||% paste0("invoice_", invoice_date, ".pdf"),
+    input = qmd,
+    output_file = pdf_filename,
     execute_params = list(
       periods = match.arg(periods),
       period_date = period_date %||% invoice_date,

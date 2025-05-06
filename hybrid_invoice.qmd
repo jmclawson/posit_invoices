@@ -26,6 +26,5 @@ source("invoice_functions.R")
 params$file |> 
   read_csv() |> 
   expand_invoices(params$periods) |> 
-  # View(title="dog")
   set_table()
 ```

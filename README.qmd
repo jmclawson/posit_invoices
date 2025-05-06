@@ -76,7 +76,7 @@ By default, an invoice will be prepared for the period ending on or before today
 render_invoice("my_records.csv")
 ```
 
-- [📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
+- [📄 hybrid_invoice_2025-05-06.pdf](hybrid_invoice_2025-05-06.pdf)
 
 #### Set a file name
 
@@ -100,7 +100,7 @@ render_invoice(
   invoice_date = "2025-06-18")
 ```
 
-- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
+- [📄 hybrid_invoice_2025-06-18.pdf](hybrid_invoice_2025-06-18.pdf)
 
 #### Choose an invoice period
 
@@ -115,7 +115,7 @@ render_invoice(
 
 - [📄 sherman_invoice3.pdf](sherman_invoice3.pdf)
 
-This method can also be used to set a broader range than might usually be chosen. Two values will construct a range and prepare an invoice for all periods ending within the range; more than two values will match invoice dates on each value. Columns update to reflect the weeks, dates, number of units, and amount due.
+This method can also be used to set a broader range than might usually be chosen. Two values will construct a range and prepare an invoice for all periods ending within the range; more than two values will match invoice dates on each value. Columns update to reflect the weeks, dates, quantity, and amount due.
 
 ```{r}
 render_invoice(
@@ -124,7 +124,7 @@ render_invoice(
   invoice_date = "2025-06-18")
 ```
 
-- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
+- [📄 hybrid_invoice_2025-06-18.pdf](hybrid_invoice_2025-06-18.pdf)
 
 ## Credit
 
