@@ -22,7 +22,7 @@ Each contract, each missed day, and each covered day should be listed on its own
 
 ## Adding details
 
-Use `expand_invoices()` to aid with invoicing at the final Friday of each period---either biweekly or monthly. It produces a data frame in the following format:
+Use `expand_invoices()` to aid with invoicing at the final Friday of each period---either biweekly or monthly. For each contract, the final `invoice_due` value adjusts to accommodate rounding errors with the contract price. It produces a data frame in the following format:
 
 ```{r}
 #| eval: true

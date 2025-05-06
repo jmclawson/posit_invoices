@@ -29,8 +29,9 @@ when mentoring *or* to the date missed or covered.
 ## Adding details
 
 Use `expand_invoices()` to aid with invoicing at the final Friday of
-each period—either biweekly or monthly. It produces a data frame in the
-following format:
+each period—either biweekly or monthly. For each contract, the final
+`invoice_due` value adjusts to accommodate rounding errors with the
+contract price. It produces a data frame in the following format:
 
 ``` r
 source("invoice_functions.R")
@@ -68,7 +69,7 @@ readr::read_csv("my_records.csv") |>
   set_table(invoice_period = "2025-05-02")
 ```
 
-<div id="rxqtnsfmyy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="sjlzjmgmha" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 |  | DATES | PRICE | AMT | DUE |
