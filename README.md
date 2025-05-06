@@ -68,7 +68,7 @@ readr::read_csv("my_records.csv") |>
   set_table(invoice_period = "2025-05-02")
 ```
 
-<div id="xcvmymwqdy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="rxqtnsfmyy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 |  | DATES | PRICE | AMT | DUE |
@@ -101,31 +101,15 @@ a PDF without needing to touch a file.
 By default, an invoice will be prepared for the period ending on or
 before today, with the date marking the filename.
 
-<div class="columns" style="display: flex; align-items: center;">
-
-<div class="column" width="50%">
-
 ``` r
 render_invoice("my_records.csv")
 ```
 
-</div>
-
-<div class="column" width="50%">
-
-[📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
-
-</div>
-
-</div>
+- [📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
 
 #### Set a file name
 
 Setting the `pdf` argument overrides filename defaults.
-
-<div class="columns" style="display: flex; align-items: center;">
-
-<div class="column" width="50%">
 
 ``` r
 render_invoice(
@@ -133,23 +117,11 @@ render_invoice(
   pdf = "sherman_invoice2.pdf")
 ```
 
-</div>
-
-<div class="column" width="50%">
-
-[📄 sherman_invoice2.pdf](sherman_invoice2.pdf)
-
-</div>
-
-</div>
+- [📄 sherman_invoice2.pdf](sherman_invoice2.pdf)
 
 #### Choose an invoice date
 
 The `invoice_date` argument prepares an invoice for some other date.
-
-<div class="columns" style="display: flex; align-items: center;">
-
-<div class="column" width="50%">
 
 ``` r
 render_invoice(
@@ -157,23 +129,11 @@ render_invoice(
   invoice_date = "2025-06-18")
 ```
 
-</div>
-
-<div class="column" width="50%">
-
-[📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
-
-</div>
-
-</div>
+- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
 
 #### Choose an invoice period
 
 Manually select an invoice period with `period_date`.
-
-<div class="columns" style="display: flex; align-items: center;">
-
-<div class="column" width="50%">
 
 ``` r
 render_invoice(
@@ -182,25 +142,13 @@ render_invoice(
   pdf = "sherman_invoice3.pdf")
 ```
 
-</div>
-
-<div class="column" width="50%">
-
-[📄 sherman_invoice3.pdf](sherman_invoice3.pdf)
-
-</div>
-
-</div>
+- [📄 sherman_invoice3.pdf](sherman_invoice3.pdf)
 
 This method can also be used to set a broader range than might usually
 be chosen. Two values will construct a range and prepare an invoice for
 all periods ending within the range; more than two values will match
 invoice dates on each value. Columns update to reflect the weeks, dates,
 number of units, and amount due.
-
-<div class="columns" style="display: flex; align-items: center;">
-
-<div class="column" width="50%">
 
 ``` r
 render_invoice(
@@ -209,15 +157,7 @@ render_invoice(
   invoice_date = "2025-06-18")
 ```
 
-</div>
-
-<div class="column" width="50%">
-
-[📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
-
-</div>
-
-</div>
+- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
 
 ## Credit
 

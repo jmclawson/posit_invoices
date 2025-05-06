@@ -70,100 +70,59 @@ Use [`hybrid_invoice.qmd`](hybrid_invoice.qmd) as a template. After setting the 
 
 By default, an invoice will be prepared for the period ending on or before today, with the date marking the filename.
 
-:::: {.columns style="display: flex; align-items: center;"}
-
-::: {.column width="50%"}
 ```{r}
 render_invoice("my_records.csv")
 ```
-:::
 
-::: {.column width="50%"}
-[📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
-:::
-
-::::
+- [📄 invoice_2025-05-06.pdf](invoice_2025-05-06.pdf)
 
 #### Set a file name
 
 Setting the `pdf` argument overrides filename defaults.
 
-:::: {.columns style="display: flex; align-items: center;"}
-
-::: {.column width="50%"}
 ```{r}
 render_invoice(
   csv = "my_records.csv", 
   pdf = "sherman_invoice2.pdf")
 ```
-:::
 
-::: {.column width="50%"}
-[📄 sherman_invoice2.pdf](sherman_invoice2.pdf)
-:::
-
-::::
-
+- [📄 sherman_invoice2.pdf](sherman_invoice2.pdf)
 
 #### Choose an invoice date
 
 The `invoice_date` argument prepares an invoice for some other date.
 
-:::: {.columns style="display: flex; align-items: center;"}
-
-::: {.column width="50%"}
 ```{r}
 render_invoice(
   csv = "my_records.csv", 
   invoice_date = "2025-06-18")
 ```
-:::
 
-::: {.column width="50%"}
-[📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
-:::
-
-::::
+- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
 
 #### Choose an invoice period
 
 Manually select an invoice period with `period_date`.
 
-:::: {.columns style="display: flex; align-items: center;"}
-
-::: {.column width="50%"}
 ```{r}
 render_invoice(
   csv = "my_records.csv", 
   period_date = "2025-04-18", 
   pdf = "sherman_invoice3.pdf")
 ```
-:::
 
-::: {.column width="50%"}
-[📄 sherman_invoice3.pdf](sherman_invoice3.pdf)
-:::
-
-::::
+- [📄 sherman_invoice3.pdf](sherman_invoice3.pdf)
 
 This method can also be used to set a broader range than might usually be chosen. Two values will construct a range and prepare an invoice for all periods ending within the range; more than two values will match invoice dates on each value. Columns update to reflect the weeks, dates, number of units, and amount due.
 
-:::: {.columns style="display: flex; align-items: center;"}
-
-::: {.column width="50%"}
 ```{r}
 render_invoice(
   csv = "my_records.csv", 
   period_date = c("2025-03-01", "2025-06-18"), 
   invoice_date = "2025-06-18")
 ```
-:::
 
-::: {.column width="50%"}
-[📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
-:::
-
-::::
+- [📄 invoice_2025-06-18.pdf](invoice_2025-06-18.pdf)
 
 ## Credit
 
