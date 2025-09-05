@@ -51,7 +51,7 @@ read_csv("my_records.csv") |>
 | 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 | 2025-04-18 | 3 | 728.00 | 0 | 2 | 2025-04-02 | 2025-04-18 |
 | 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 | 2025-05-02 | 3 | 728.00 | 3 | 4 | 2025-04-19 | 2025-05-02 |
 | 2025-04-02 | mentored | Advanced Sugargliding | Second Co. Ltd. | 2184 | 2025-05-16 | 2025-05-16 | 3 | 728.00 | 5 | 6 | 2025-05-03 | 2025-05-16 |
-| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | 133 | NA | 2025-04-11 | 1 | 133.00 | 0 | 0 | 2025-04-06 | 2025-04-06 |
+| 2025-04-06 | covered | Expressive Bowling | Froggy Croakers | 133 | NA | 2025-04-18 | 1 | 133.00 | 0 | 0 | 2025-04-06 | 2025-04-06 |
 | 2025-04-07 | missed | Dogpaddling Foundations | Company 1 | -122 | NA | 2025-04-18 | 1 | -122.00 | 0 | 0 | 2025-04-07 | 2025-04-07 |
 | 2025-05-06 | covered | Expressive Bowling | Froggy Croakers | 133 | NA | 2025-05-16 | 1 | 133.00 | 0 | 0 | 2025-05-06 | 2025-05-06 |
 | 2025-06-07 | missed | Dogpaddling Foundations | Company 1 | -122 | NA | 2025-06-13 | 1 | -122.00 | 0 | 0 | 2025-06-07 | 2025-06-07 |
@@ -70,15 +70,16 @@ read_csv("my_records.csv") |>
   set_table(invoice_period = "2025-04-18")
 ```
 
-<div id="silzpxqddi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="xllcneoyay" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 |  | DATES | PRICE | QTY | DUE |
 |:---|:---|---:|:--:|---:|
 | mentored *Dogpaddling Foundations* with **Company 1** weeks 0–2 | Apr 1–18 | \$3,640 | 1/6 | \$606.67 |
 | mentored *Advanced Sugargliding* with **Second Co. Ltd.** weeks 0–2 | Apr 2–18 | \$2,184 | 1/3 | \$728.00 |
+| covered *Expressive Bowling* with **Froggy Croakers** | Apr 6 | \$133 | 1 | \$133.00 |
 | missed *Dogpaddling Foundations* with **Company 1** | Apr 7 | −\$122 | 1 | (\$122.00) |
-| TOTAL |   |   |   | \$1,212.67 |
+| TOTAL |   |   |   | \$1,345.67 |
 
 </div>
 

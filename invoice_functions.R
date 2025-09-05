@@ -1,8 +1,64 @@
 library(tidyverse)
 library(gt)
 
-invoice_biweekly <- function(df, cluster_iso = TRUE) {
+handle_exceptions <- function(df, exceptions) {
+  if ("start_week" %in% names(exceptions)) {
+    df <- df |> 
+      add_startwk(exceptions$start_week)
+  } else {
+    df <- df |> 
+      add_startwk(NULL)
+  }
+  
+  if ("skip_invoices" %in% names(exceptions)) {
+    df <- df |> 
+      add_skip_invoices(exceptions$skip_invoices)
+  } else {
+    df <- df |> add_skip_invoices(NULL)
+  }
+  df
+}
+
+add_skip_invoices <- function(df, skip_invoices){
+  if (!is.null(skip_invoices)) {
+    skipped_invoices_exceptions <- tibble(
+      rule = names(unlist(skip_invoices)),
+      skip_invoice_wk = unname(unlist(skip_invoices)) |> 
+        as.integer()) |> 
+      mutate(group = str_subset(df$group, rule)) |> 
+      select(group, skip_invoice_wk)
+    
+    df <- df |> 
+      left_join(skipped_invoices_exceptions) |> 
+      replace_na(list(skip_invoice_wk = 0))
+  } else {
+    df <- df |> 
+      mutate(skip_invoice_wk = 0)
+  }
+  df
+}
+
+add_startwk <- function(df, start_week) {
+  if (!is.null(start_week)) {
+    starting_exceptions <- tibble(
+      rule = names(unlist(start_week)),
+      startwk = unname(unlist(start_week))) |> 
+      mutate(group = str_subset(df$group, rule)) |> 
+      select(group, startwk)
+    
+    df <- df |> 
+      left_join(starting_exceptions) |> 
+      replace_na(list(startwk = 0))
+  } else {
+    df <- df |> 
+      mutate(startwk = 0)
+  }
+  df
+}
+
+invoice_biweekly <- function(df, cluster_iso = TRUE, exceptions = NULL) {
   df |> 
+    handle_exceptions(exceptions) |> 
     rowwise() |> 
     mutate(
       date = as_date(date),
@@ -12,10 +68,13 @@ invoice_biweekly <- function(df, cluster_iso = TRUE) {
         list(isoweek(date):isoweek(date_end)))) |>
     ungroup() |> 
     unnest_longer(isoweek) |> 
+    group_by(date, action, course, 
+             group, contract, date_end) |> 
     mutate(
-      .by = c(date, action, course, group, contract, date_end),
-      week = 0:(n() - 1),
-      friday = date + 6 - wday(date) + 7 * week) |> 
+      week = startwk:(n() - 1 + startwk),
+      friday = date + 6 - wday(date) + 7 * (week - startwk)) |> 
+    arrange(friday) |> 
+    ungroup() |> 
     rowwise() |> 
     mutate(
       invoice = case_when(
@@ -33,17 +92,21 @@ invoice_biweekly <- function(df, cluster_iso = TRUE) {
     group_by(date, action, course, group, contract, date_end) |> 
     mutate(
       invoice = case_when(
+        week == 0 ~ as.Date(NA),
         cluster_iso & is.na(date_end) & isoweek %% 2 == 0 ~ friday,
         cluster_iso & is.na(date_end) & isoweek %% 2 == 1 ~ friday + 7,
         !cluster_iso & is.na(date_end) ~ friday,
         friday == last(friday) & is.na(invoice) ~ friday + 7,
+        (week - startwk) <= skip_invoice_wk ~ as.Date(NA),
         .default = invoice)) |> 
+    fill(invoice, .direction = "up") |> 
     ungroup() |> 
     fill(invoice, .direction = "up")
 }
 
-invoice_monthly <- function(df) {
+invoice_monthly <- function(df, exceptions) {
   df |> 
+    handle_exceptions(exceptions) |> 
     rowwise() |> 
     mutate(
       date = as_date(date),
@@ -55,8 +118,8 @@ invoice_monthly <- function(df) {
     unnest_longer(isoweek) |> 
     mutate(
       .by = c(date, action, course, group, contract, date_end),
-      week = 0:(n() - 1),
-      friday = date + 6 - wday(date) + 7 * week,
+      week = startwk:(n() - 1 + startwk),
+      friday = date + 6 - wday(date) + 7 * (week - startwk),
       month = month(friday)) |> 
     group_by(month) |> 
     mutate(
@@ -67,12 +130,43 @@ invoice_monthly <- function(df) {
     fill(invoice, .direction = "up")
 }
 
-expand_invoices <- function(df, period = c("biweekly", "monthly"), missed_price = -122, covered_price = 133) {
+#' Convert per-contract data frame into per-invoice
+#'
+#' @param df Data frame containing columns for `date`, `action`, `course`, `group`, `contract`, and `date_end`
+#' @param period Either "biweekly" or "monthly"
+#' @param cluster_iso By default, biweekly invoicing will follow the calendar year. Set `cluster_iso` to FALSE to instead invoice biweekly from the starting date.
+#' @param missed_price Amount to deduct for missing a class.
+#' @param covered_price Amount to add for covering someone else's class.
+#' @param exceptions A named list of exceptions. 
+#'   - Set `start_week` for values other than 0 for rare circumstances in which a class is picked up from another after the kickoff week.
+#'   - Set `skip_invoices` to modify the default invoicing schedule. This might make sense, for example, if a 6-week course is picked up in week 4, leading to a strange scenario of half of the contract being invoiced in week 1. In this scenario, set `skip_invoices` to `1` for that group to skip the first invoice date.
+#'
+#' @returns A data frame with one row per invoice item
+#' @export
+#'
+#' @examples
+#' params$file |> 
+#'   read_csv() |> 
+#'   expand_invoices(
+#'     params$periods, 
+#'     cluster_iso = FALSE,
+#'     exceptions = list(
+#'       start_week = list(
+#'         # Name partial matches a group
+#'         "Condo-B" = 4
+#'       ),
+#'       skip_invoices = list(
+#'         "Condo-B" = 1
+#'       )
+#'     )
+#'   ) |>
+#'   set_table()
+expand_invoices <- function(df, period = c("biweekly", "monthly"), cluster_iso = TRUE, missed_price = -122, covered_price = 133, exceptions = NULL) {
   period <- match.arg(period)
   switch(
     period,
-    biweekly = invoice_biweekly(df),
-    monthly = invoice_monthly(df)) |> 
+    biweekly = invoice_biweekly(df, cluster_iso, exceptions),
+    monthly = invoice_monthly(df, exceptions)) |> 
     group_by(date, action, course, group, contract, date_end, invoice) |> 
     summarize(
       week_start = min(week),
@@ -127,7 +221,7 @@ print_range <- function(x, y){
   }
 }
 
-set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
+set_table <- function(df, invoice_period = params$period_date %||% Sys.Date(), contract_cents = NULL) {
   if (length(invoice_period) == 1) {
     df <- df |> 
       filter(invoice <= invoice_period) |> 
@@ -138,6 +232,9 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
   } else if (length(invoice_period) > 2) {
     df <- df |> 
       filter(invoice %in% invoice_period)
+  }
+  if (is.null(contract_cents)) {
+    contract_cents <- ifelse(any(df$contract %% 1 != 0), TRUE, FALSE)
   }
   df |> 
     mutate(quantity = 1/invoices) |> 
@@ -174,7 +271,7 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
         print_range(
           x = period_start,
           y = period_end)),
-      description = paste0(action, " *", course, "* with **", group, "** ", week_range) |> str_squish()) |> 
+      description = paste0(action, " *", course, "* with **", group, "** ", week_range, if_else(!is.na(contract_end) & (period_end >= contract_end), " —*contract complete*", "")) |> str_squish()) |> 
     select(description, period_range, contract, 
            quantity, invoice_due) |>
     arrange(desc(contract)) |> 
@@ -207,7 +304,7 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
     fmt_currency(
       columns = c(contract), 
       accounting = FALSE,
-      use_subunits = FALSE) |> 
+      use_subunits = contract_cents) |> 
     fmt_currency(
       columns = c(invoice_due), 
       accounting = TRUE) |> 
@@ -228,6 +325,11 @@ set_table <- function(df, invoice_period = params$period_date %||% Sys.Date()) {
         cell_text(align = "right")
       ),
       locations = cells_stub_grand_summary()) |> 
+    # tab_style(
+    #   style = list(
+    #     cell_text(weight = "bold"),
+    #     "font-variant: small-caps;"), 
+    #   locations = cells_column_labels(columns = everything())) |> 
     opt_row_striping() |>
     tab_options(row.striping.include_stub = TRUE)
 }
