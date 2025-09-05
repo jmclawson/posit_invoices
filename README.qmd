@@ -121,10 +121,11 @@ This method can also be used to set a broader range than might usually be chosen
 render_invoice(
   csv = "my_records.csv", 
   period_date = c("2025-03-01", "2025-06-18"), 
-  invoice_date = "2025-06-18")
+  invoice_date = "2025-06-18",
+  pdf = "invoice_march-june")
 ```
 
-- [📄 hybrid_invoice_2025-06-18.pdf](hybrid_invoice_2025-06-18.pdf)
+- [📄 invoice_march-june.pdf](invoice_march-june.pdf)
 
 ## Credit
 

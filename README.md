@@ -70,7 +70,7 @@ read_csv("my_records.csv") |>
   set_table(invoice_period = "2025-04-18")
 ```
 
-<div id="xllcneoyay" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="nehskejzwc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
   &#10;  
 
 |  | DATES | PRICE | QTY | DUE |
@@ -160,10 +160,11 @@ quantity, and amount due.
 render_invoice(
   csv = "my_records.csv", 
   period_date = c("2025-03-01", "2025-06-18"), 
-  invoice_date = "2025-06-18")
+  invoice_date = "2025-06-18",
+  pdf = "invoice_march-june")
 ```
 
-- [📄 hybrid_invoice_2025-06-18.pdf](hybrid_invoice_2025-06-18.pdf)
+- [📄 invoice_march-june.pdf](invoice_march-june.pdf)
 
 ## Credit
 
